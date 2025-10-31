@@ -8,53 +8,63 @@
     body{
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
       background:linear-gradient(135deg,#ff6f61,#ffb3a7);
-      display:flex;justify-content:center;align-items:center;height:100vh;
-      margin:0;padding:15px;color:#333;overflow:hidden
+      display:flex;justify-content:center;align-items:center;height:100vh;margin:0;padding:15px;color:#333;overflow:hidden
     }
     .container{
       background:#fff;padding:30px;border-radius:20px;
       box-shadow:0 12px 24px rgba(0,0,0,.2);
-      max-width:450px;width:100%;text-align:center;position:relative;overflow:hidden;
+      max-width:520px;width:100%;text-align:center;position:relative;overflow:hidden;
       transition:background .5s ease
     }
-    h2{color:#c2185b;margin-bottom:25px;font-size:2em;font-weight:600;text-shadow:0 2px 4px rgba(0,0,0,.1)}
-    label{font-size:1.3em;color:#444;display:block;margin-bottom:15px}
+    h2{color:#c2185b;margin-bottom:20px;font-size:2rem;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.08)}
+    label{display:block;margin-bottom:10px;font-size:1.05rem;color:#444}
     input[type="number"]{
-      width:100%;padding:14px;font-size:1.2em;border:2px solid #ff8a80;border-radius:12px;outline:none;
+      width:100%;padding:14px;font-size:1.1rem;border:2px solid #ff8a80;border-radius:12px;outline:none;
       transition:border-color .3s,box-shadow .3s
     }
-    input[type="number"]:focus{border-color:#c2185b;box-shadow:0 0 10px rgba(194,24,91,.4)}
+    input[type="number"]:focus{border-color:#c2185b;box-shadow:0 0 10px rgba(194,24,91,.25)}
     button{
-      background:#c2185b;color:#fff;border:none;padding:15px 25px;font-size:1.3em;border-radius:12px;cursor:pointer;
-      transition:background .3s,transform .2s;margin-top:20px;width:100%;
-      box-shadow:0 4px 8px rgba(0,0,0,.2);position:relative;overflow:hidden
+      background:#c2185b;color:#fff;border:none;padding:14px 22px;border-radius:12px;font-size:1.1rem;cursor:pointer;width:100%;
+      margin-top:16px;box-shadow:0 4px 8px rgba(0,0,0,.2);transition:background .25s,transform .15s
     }
     button:hover{background:#8e0038}
-    button:active{transform:scale(.95);box-shadow:0 2px 4px rgba(0,0,0,.2)}
+    button:active{transform:scale(.98)}
     .button-pulse{animation:pulse .6s ease-out}
     @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+    /* Tarjeta de resultados clara y legible */
     #resultado{
-      margin-top:25px;font-size:1.5em;color:#00796b;font-weight:600;background:#e0f7fa;padding:10px;border-radius:10px;
-      box-shadow:0 2px 4px rgba(0,0,0,.1);position:relative;min-height:40px;opacity:0
+      margin-top:18px; opacity:0;
     }
-    .result-show{animation:fadeInBounce .8s ease-out forwards}
-    @keyframes fadeInBounce{0%{opacity:0;transform:translateY(20px)}70%{opacity:1;transform:translateY(-5px)}100%{opacity:1;transform:translateY(0)}}
-    .vibrate{animation:vibrate .3s ease}
-    @keyframes vibrate{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+    .result-card{
+      text-align:left; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px;
+      box-shadow:0 6px 16px rgba(0,0,0,.08);
+    }
+    .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e5e7eb}
+    .row:last-child{border-bottom:none}
+    .label{color:#334155;font-weight:600}
+    .value{color:#0f766e;font-weight:700}
+    .total .label{color:#0f172a}
+    .total .value{color:#0b5d56;font-size:1.15rem}
+
+    /* Animaciones existentes */
+    .result-show{animation:fadeInBounce .6s ease-out forwards}
+    @keyframes fadeInBounce{0%{opacity:0;transform:translateY(12px)}70%{opacity:1;transform:translateY(-3px)}100%{opacity:1;transform:translateY(0)}}
+    .slot-machine{animation:slotSpin .7s ease-in-out;filter:blur(1px)}
+    @keyframes slotSpin{0%{transform:translateY(-10px);opacity:.6}50%{transform:translateY(10px);opacity:.85}100%{transform:translateY(0);opacity:1;filter:blur(0)}}
+    .vibrate{animation:vibrate .25s ease}
+    @keyframes vibrate{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
     .sparkles::before,.sparkles::after{
       content:'';position:absolute;background:radial-gradient(circle,rgba(255,215,0,.8),transparent);
       border-radius:50%;opacity:0;animation:sparkle .8s ease-out forwards
     }
-    .sparkles::before{width:20px;height:20px;top:-10px;left:10%}
-    .sparkles::after{width:15px;height:15px;bottom:-10px;right:15%}
-    @keyframes sparkle{0%{opacity:.8;transform:scale(0)}100%{opacity:0;transform:scale(1.5)}}
-    .slot-machine{animation:slotSpin 1s ease-in-out;filter:blur(2px)}
-    @keyframes slotSpin{0%{transform:translateY(-20px);opacity:.5}50%{transform:translateY(20px);opacity:.7}100%{transform:translateY(0);opacity:1;filter:blur(0)}}
-    @media (max-width:500px){
-      .container{padding:20px}
-      h2{font-size:1.6em}
-      label,input,button{font-size:1em}
-      #resultado{font-size:1.3em}
+    .sparkles::before{width:18px;height:18px;top:-8px;left:12%}
+    .sparkles::after{width:14px;height:14px;bottom:-8px;right:14%}
+    @keyframes sparkle{0%{opacity:.9;transform:scale(0)}100%{opacity:0;transform:scale(1.4)}}
+
+    @media (max-width:520px){
+      .container{padding:22px}
+      h2{font-size:1.6rem}
     }
   </style>
 
@@ -63,107 +73,95 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
   <script>
-    // ========= Audio (Tone.js) =========
-    let cashRegisterSynth, noiseSynth, isAudioContextStarted = false;
-
-    async function startAudioContext() {
-      if (isAudioContextStarted) return;
-      try {
+    // ======= Audio (opcional) =======
+    let cashRegisterSynth, noiseSynth, audioReady = false;
+    async function startAudio(){
+      if (audioReady) return;
+      try{
         await Tone.start();
-        isAudioContextStarted = true;
-
         cashRegisterSynth = new Tone.MetalSynth({
-          frequency:200,
-          envelope:{ attack:0.001, decay:0.2, release:0.1 },
+          frequency:200, envelope:{attack:0.001,decay:0.2,release:0.1},
           harmonicity:3.1, modulationIndex:23, resonance:4000, octaves:1.5, volume:-8
         }).toDestination();
-
         noiseSynth = new Tone.NoiseSynth({
-          noise:{ type:'white' },
-          envelope:{ attack:0.001, decay:0.05, sustain:0, release:0.01 },
-          volume:-18
+          volume:-18, envelope:{attack:0.005,decay:0.1,release:0.05}
         }).toDestination();
-
-      } catch (err) {
-        console.warn('AudioContext bloqueado/no disponible:', err);
-      }
+        audioReady = true;
+      }catch(e){ console.warn('Audio bloqueado/no disponible:', e); }
     }
 
-    // ========= Lógica de Cálculo =========
-    function calcular() {
+    // ======= Formateador MXN =======
+    const MXN = new Intl.NumberFormat('es-MX',{ style:'currency', currency:'MXN', minimumFractionDigits:2, maximumFractionDigits:2 });
+
+    // ======= Cálculo correcto =======
+    function calcular(){
       const input = document.getElementById('valorBase');
       const out   = document.getElementById('resultado');
       const btn   = document.getElementById('calculateButton');
+      const container = document.getElementById('container');
 
-      const valor = parseFloat(input.value);
-      const resultado = Number.isFinite(valor) ? (valor * 0.4074) : NaN;  // <<--- TU FÓRMULA
+      const X = parseFloat(input.value);
+      if (!Number.isFinite(X) || X < 0){
+        out.innerHTML = '';
+        out.style.opacity = 1;
+        out.className = '';
+        out.textContent = 'Ingresa una cantidad válida';
+        return;
+      }
 
-      // Sonidos (si audio ok)
-      try {
-        if (isAudioContextStarted) {
+      // 1) Restar IVA 16%
+      const ivaDescontado = X * 0.16;
+      const baseSinIVA    = X - ivaDescontado;
+
+      // 2) Restar 3% sobre la base ya sin IVA
+      const descuento3 = baseSinIVA * 0.03;
+
+      // 3) Subtotal después de ambos descuentos
+      const subTotal = baseSinIVA - descuento3;
+
+      // 4) Mitad para cada socio
+      const porSocio = subTotal / 2;
+
+      // Sonidos + confetti (opcionales)
+      try{
+        if (audioReady){
           cashRegisterSynth?.triggerAttackRelease("C4","8n");
-          setTimeout(() => cashRegisterSynth?.triggerAttackRelease("G5","16n", Tone.now()), 100);
           noiseSynth?.triggerAttackRelease("8n");
         }
-      } catch(e) {}
+        confetti({ particleCount:100, spread:70, origin:{ y:0.6 }, colors:['#ff6f61','#ffb3a7','#c2185b','#00796b'] });
+      }catch(e){}
 
-      // Confetti
-      try { confetti({ particleCount:100, spread:70, origin:{ y:0.6 }, colors:['#ff6f61','#ffb3a7','#c2185b','#00796b'] }); } catch(e){}
+      // Fondo dinámico suave
+      const colors = ['#f8bbd0','#b2ebf2','#c8e6c9','#fff9c4','#d1c4e9'];
+      container.style.background = colors[Math.floor(Math.random()*colors.length)];
 
-      // Mostrar resultado
-      out.textContent = Number.isFinite(resultado) ? `Resultado: ${resultado.toFixed(2)}` : 'Ingresa un número válido';
-      out.classList.remove('slot-machine','vibrate','sparkles','result-show');
+      // Pintar resultado claro y legible
+      out.innerHTML = `
+        <div class="result-card sparkles">
+          <div class="row"><span class="label">Cantidad Depositada:</span><span class="value">${MXN.format(X)}</span></div>
+          <div class="row"><span class="label">IVA descontado (16%):</span><span class="value">-${MXN.format(ivaDescontado)}</span></div>
+          <div class="row"><span class="label">3% Descontado:</span><span class="value">-${MXN.format(descuento3)}</span></div>
+          <div class="row total"><span class="label">Sub Total:</span><span class="value">${MXN.format(subTotal)}</span></div>
+          <div class="row total"><span class="label">Le toca a cada uno de los Socios:</span><span class="value">${MXN.format(porSocio)}</span></div>
+        </div>
+      `;
+
+      // Animaciones/visibilidad
+      out.classList.remove('slot-machine','vibrate','result-show');
       void out.offsetWidth;
-      out.classList.add('slot-machine','vibrate','sparkles','result-show');
+      out.classList.add('slot-machine','vibrate','result-show');
       out.style.opacity = 1;
 
-      // Efecto botón
+      // efecto botón
       btn.classList.remove('button-pulse'); void btn.offsetWidth; btn.classList.add('button-pulse');
-
-      // Icono 💸
-      const icon = document.createElement('span');
-      icon.className = 'icon-anim'; icon.textContent = '💸';
-      document.getElementById('container')?.appendChild(icon);
-      setTimeout(() => icon.remove(), 1000);
-
-      // Fondo aleatorio
-      const colors = ['#f8bbd0','#b2ebf2','#c8e6c9','#fff9c4','#d1c4e9'];
-      document.getElementById('container').style.background = colors[Math.floor(Math.random()*colors.length)];
-
-      // Moneditas
-      for (let i=0;i<15;i++){
-        const coin = document.createElement('span');
-        coin.className='coin'; coin.textContent='💰';
-        coin.style.left = `${Math.random()*100}%`;
-        coin.style.animationDelay = `${Math.random()*0.5}s`;
-        document.getElementById('container').appendChild(coin);
-        setTimeout(()=>coin.remove(),2000);
-      }
-
-      // Símbolos flotantes
-      for (let i=0;i<5;i++){
-        const s = document.createElement('span');
-        s.className='floating-currency';
-        s.textContent = ['💲','💵','💰'][Math.floor(Math.random()*3)];
-        s.style.left = `${20 + Math.random()*60}%`;
-        s.style.top  = `${50 + Math.random()*20}%`;
-        s.style.setProperty('--float-x', `${(Math.random()-0.5)*100}px`);
-        s.style.animationDelay = `${Math.random()*0.2}s`;
-        document.getElementById('container').appendChild(s);
-        setTimeout(()=>s.remove(),2000);
-      }
-
-      // Vibración móvil
-      if (navigator.vibrate) navigator.vibrate(200);
     }
 
-    // ========= Enlace de eventos =========
+    // ======= Enlaces de eventos =======
     window.addEventListener('DOMContentLoaded', ()=>{
       const btn = document.getElementById('calculateButton');
-      // Un solo listener para evitar doble ejecución por onclick inline
       btn.addEventListener('click', async ()=>{
-        await startAudioContext();  // inicia audio en el primer clic
-        calcular();                 // luego calcula y anima
+        await startAudio(); // inicia audio en primer clic (opcional)
+        calcular();         // calcula y muestra
       });
     });
   </script>
@@ -171,8 +169,8 @@
 <body>
   <div class="container" id="container">
     <h2>Calculadora Legendaria 💸</h2>
-    <label for="valorBase">Ingresa el valor base (ej. 53600):</label>
-    <input type="number" id="valorBase" value="53600" step="any"/>
+    <label for="valorBase">Ingresa la cantidad depositada (ej. 53,600.00):</label>
+    <input type="number" id="valorBase" value="53600" step="any" />
     <button id="calculateButton">Calcular</button>
     <div id="resultado"></div>
   </div>
