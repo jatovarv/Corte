@@ -239,7 +239,7 @@
     <h2>Calculadora Legendaria $,$</h2>
     <label for="valorBase">Ingresa el valor base (ej. 53600):</label>
     <input type="number" id="valorBase" value="53600">
-    <button id="calculateButton" onclick="calcular()">Calcular</button>
+    <button id="calculateButton">Calcular</button>
     <div id="resultado"></div>
   </div>
 
@@ -250,33 +250,56 @@
 
   <script>
     // Initialize Tone.js components globally or lazily to ensure audio context is ready
-    let cashRegisterSynth;
-    let noiseSynth; // Separate variable for the noise synth
-    let isAudioContextStarted = false;
+    let cashRegisterSynth, noiseSynth, isAudioContextStarted = false;
 
-    // Function to start the Tone.js audio context on first user interaction
-    async function startAudioContext() {
-      if (!isAudioContextStarted) {
-        try {
-          await Tone.start();
-          console.log('AudioContext started!');
-          isAudioContextStarted = true;
+  async function startAudioContext() {
+    if (!isAudioContextStarted) {
+      await Tone.start();
+      isAudioContextStarted = true;
+      cashRegisterSynth = new Tone.MetalSynth({
+        frequency: 200,
+        envelope: { attack: 0.001, decay: 0.2, release: 0.1 },
+        harmonicity: 3.1, modulationIndex: 23, resonance: 4000, octaves: 1.5, amplitude: 0.5
+      });
+      noiseSynth = new Tone.NoiseSynth({ volume: -15, envelope: { attack: 0.005, decay: 0.1, release: 0.05 }});
+      // Conectar a la salida
+      cashRegisterSynth.toDestination();
+      noiseSynth.toDestination();
+    }
+  }
 
-          // Initialize the synth for the cash register sound
-          cashRegisterSynth = new Tone.MetalSynth({
-            frequency: 200,
-            envelope: {
-              attack: 0.001,
-              decay: 0.2,
-              release: 0.1
-            },
-            harmonicity: 3.1,
-            modulationIndex: 23,
-            resonance: 4000,
-            octaves: 1.5,
-            amplitude: 0.5 // Adjust volume
-          });
+  // EJEMPLO de función calcular (ajusta la fórmula a tu lógica real)
+  function calcular() {
+    const input = document.getElementById('valorBase');
+    const out   = document.getElementById('resultado');
+    const val   = Number(input.value || 0);
 
-          // Initialize the noise synth for the click feel
-          noiseSynth = new Tone.NoiseSynth({
+    // --- tu lógica de cálculo aquí ---
+    const total = Math.round(val * 1.16); // <-- reemplaza por tu fórmula real
+    // ----------------------------------
 
+    // Animación/sonido
+    try { cashRegisterSynth?.triggerAttackRelease("C4", "8n"); } catch(e){}
+    try { noiseSynth?.triggerAttackRelease("8n"); } catch(e){}
+
+    // Confetti
+    try { confetti({ particleCount: 120, spread: 70, origin: { y: 0.3 } }); } catch(e){}
+
+    // Mostrar resultado con clases que ya tienes en CSS
+    out.textContent = `Resultado: ${total.toLocaleString('es-MX')}`;
+    out.classList.remove('slot-machine','result-show','vibrate','sparkles');
+    void out.offsetWidth;               // reflow para reiniciar animaciones
+    out.classList.add('slot-machine','result-show','sparkles');
+  }
+
+  // Enlazar el botón: primero arrancar audio, luego calcular
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('calculateButton');
+    btn.addEventListener('click', async () => {
+      try { await startAudioContext(); } catch(e){}
+      calcular();
+      // efecto visual del botón si quieres
+      btn.classList.remove('button-pulse'); void btn.offsetWidth; btn.classList.add('button-pulse');
+    });
+  });
+</script>
