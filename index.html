@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculadora Legendaria $,$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculadora Legendaria 💸</title>
   <style>
     body{
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
@@ -20,13 +20,14 @@
     h2{color:#c2185b;margin-bottom:25px;font-size:2em;font-weight:600;text-shadow:0 2px 4px rgba(0,0,0,.1)}
     label{font-size:1.3em;color:#444;display:block;margin-bottom:15px}
     input[type="number"]{
-      width:100%;padding:14px;font-size:1.2em;border:2px solid #ff8a80;border-radius:12px;outline:0;
+      width:100%;padding:14px;font-size:1.2em;border:2px solid #ff8a80;border-radius:12px;outline:none;
       transition:border-color .3s,box-shadow .3s
     }
     input[type="number"]:focus{border-color:#c2185b;box-shadow:0 0 10px rgba(194,24,91,.4)}
     button{
-      background:#c2185b;color:#fff;border:0;padding:15px 25px;font-size:1.3em;border-radius:12px;cursor:pointer;
-      transition:background .3s,transform .2s;margin-top:20px;width:100%;box-shadow:0 4px 8px rgba(0,0,0,.2);position:relative;overflow:hidden
+      background:#c2185b;color:#fff;border:none;padding:15px 25px;font-size:1.3em;border-radius:12px;cursor:pointer;
+      transition:background .3s,transform .2s;margin-top:20px;width:100%;
+      box-shadow:0 4px 8px rgba(0,0,0,.2);position:relative;overflow:hidden
     }
     button:hover{background:#8e0038}
     button:active{transform:scale(.95);box-shadow:0 2px 4px rgba(0,0,0,.2)}
@@ -56,67 +57,122 @@
       #resultado{font-size:1.3em}
     }
   </style>
-  <!-- Librerías con defer para que el DOM exista antes de ejecutar JS -->
+
+  <!-- Librerías (defer) -->
   <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-  <script defer>
-    // Estado/audio global
+
+  <script>
+    // ========= Audio (Tone.js) =========
     let cashRegisterSynth, noiseSynth, isAudioContextStarted = false;
 
-    async function startAudioContext(){
+    async function startAudioContext() {
       if (isAudioContextStarted) return;
-      try{
+      try {
         await Tone.start();
         isAudioContextStarted = true;
+
         cashRegisterSynth = new Tone.MetalSynth({
           frequency:200,
-          envelope:{attack:0.001,decay:0.2,release:0.1},
-          harmonicity:3.1,modulationIndex:23,resonance:4000,octaves:1.5,volume:-8
+          envelope:{ attack:0.001, decay:0.2, release:0.1 },
+          harmonicity:3.1, modulationIndex:23, resonance:4000, octaves:1.5, volume:-8
         }).toDestination();
+
         noiseSynth = new Tone.NoiseSynth({
-          volume:-18,envelope:{attack:0.005,decay:0.1,release:0.05}
+          noise:{ type:'white' },
+          envelope:{ attack:0.001, decay:0.05, sustain:0, release:0.01 },
+          volume:-18
         }).toDestination();
-      }catch(e){ console.warn("Audio no disponible:", e); }
+
+      } catch (err) {
+        console.warn('AudioContext bloqueado/no disponible:', err);
+      }
     }
 
-    function calcular(){
+    // ========= Lógica de Cálculo =========
+    function calcular() {
       const input = document.getElementById('valorBase');
       const out   = document.getElementById('resultado');
-      const val   = Number(input.value || 0);
+      const btn   = document.getElementById('calculateButton');
 
-      // --- Lógica de cálculo (ajusta a tu fórmula real) ---
-      const total = Math.round(val * 1.16);
-      // -----------------------------------------------------
+      const valor = parseFloat(input.value);
+      const resultado = Number.isFinite(valor) ? (valor * 0.4074) : NaN;  // <<--- TU FÓRMULA
 
-      // Sonidos (si el usuario ya interactuó)
-      try{ cashRegisterSynth?.triggerAttackRelease("C4","8n"); noiseSynth?.triggerAttackRelease("8n"); }catch(e){}
+      // Sonidos (si audio ok)
+      try {
+        if (isAudioContextStarted) {
+          cashRegisterSynth?.triggerAttackRelease("C4","8n");
+          setTimeout(() => cashRegisterSynth?.triggerAttackRelease("G5","16n", Tone.now()), 100);
+          noiseSynth?.triggerAttackRelease("8n");
+        }
+      } catch(e) {}
 
       // Confetti
-      try{ confetti({ particleCount:120, spread:70, origin:{ y:0.3 } }); }catch(e){}
+      try { confetti({ particleCount:100, spread:70, origin:{ y:0.6 }, colors:['#ff6f61','#ffb3a7','#c2185b','#00796b'] }); } catch(e){}
 
-      // Mostrar resultado con animaciones
-      out.textContent = `Resultado: ${total.toLocaleString('es-MX')}`;
-      out.classList.remove('slot-machine','result-show','vibrate','sparkles');
-      void out.offsetWidth; // reinicia animaciones
-      out.classList.add('slot-machine','result-show','sparkles');
+      // Mostrar resultado
+      out.textContent = Number.isFinite(resultado) ? `Resultado: ${resultado.toFixed(2)}` : 'Ingresa un número válido';
+      out.classList.remove('slot-machine','vibrate','sparkles','result-show');
+      void out.offsetWidth;
+      out.classList.add('slot-machine','vibrate','sparkles','result-show');
+      out.style.opacity = 1;
+
+      // Efecto botón
+      btn.classList.remove('button-pulse'); void btn.offsetWidth; btn.classList.add('button-pulse');
+
+      // Icono 💸
+      const icon = document.createElement('span');
+      icon.className = 'icon-anim'; icon.textContent = '💸';
+      document.getElementById('container')?.appendChild(icon);
+      setTimeout(() => icon.remove(), 1000);
+
+      // Fondo aleatorio
+      const colors = ['#f8bbd0','#b2ebf2','#c8e6c9','#fff9c4','#d1c4e9'];
+      document.getElementById('container').style.background = colors[Math.floor(Math.random()*colors.length)];
+
+      // Moneditas
+      for (let i=0;i<15;i++){
+        const coin = document.createElement('span');
+        coin.className='coin'; coin.textContent='💰';
+        coin.style.left = `${Math.random()*100}%`;
+        coin.style.animationDelay = `${Math.random()*0.5}s`;
+        document.getElementById('container').appendChild(coin);
+        setTimeout(()=>coin.remove(),2000);
+      }
+
+      // Símbolos flotantes
+      for (let i=0;i<5;i++){
+        const s = document.createElement('span');
+        s.className='floating-currency';
+        s.textContent = ['💲','💵','💰'][Math.floor(Math.random()*3)];
+        s.style.left = `${20 + Math.random()*60}%`;
+        s.style.top  = `${50 + Math.random()*20}%`;
+        s.style.setProperty('--float-x', `${(Math.random()-0.5)*100}px`);
+        s.style.animationDelay = `${Math.random()*0.2}s`;
+        document.getElementById('container').appendChild(s);
+        setTimeout(()=>s.remove(),2000);
+      }
+
+      // Vibración móvil
+      if (navigator.vibrate) navigator.vibrate(200);
     }
 
-    // Al cargar el DOM, conectamos el botón
+    // ========= Enlace de eventos =========
     window.addEventListener('DOMContentLoaded', ()=>{
       const btn = document.getElementById('calculateButton');
+      // Un solo listener para evitar doble ejecución por onclick inline
       btn.addEventListener('click', async ()=>{
-        await startAudioContext();
-        calcular();
-        btn.classList.remove('button-pulse'); void btn.offsetWidth; btn.classList.add('button-pulse');
+        await startAudioContext();  // inicia audio en el primer clic
+        calcular();                 // luego calcula y anima
       });
     });
   </script>
 </head>
 <body>
   <div class="container" id="container">
-    <h2>Calculadora Legendaria $,$</h2>
+    <h2>Calculadora Legendaria 💸</h2>
     <label for="valorBase">Ingresa el valor base (ej. 53600):</label>
-    <input type="number" id="valorBase" value="53600" step="any" />
+    <input type="number" id="valorBase" value="53600" step="any"/>
     <button id="calculateButton">Calcular</button>
     <div id="resultado"></div>
   </div>
