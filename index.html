@@ -1,305 +1,124 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculadora Legendaria $,$</title>
   <style>
-    /* Basic body styling for full-screen display and gradient background */
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #ff6f61, #ffb3a7); /* Gradient background */
-      display: flex;
-      justify-content: center; /* Center horizontally */
-      align-items: center; /* Center vertically */
-      height: 100vh; /* Full viewport height */
-      margin: 0;
-      padding: 15px; /* Padding around the body */
-      color: #333;
-      overflow: hidden; /* Prevent scrollbars from popping up due to animations */
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      background:linear-gradient(135deg,#ff6f61,#ffb3a7);
+      display:flex;justify-content:center;align-items:center;height:100vh;
+      margin:0;padding:15px;color:#333;overflow:hidden
     }
-    /* Container for the calculator elements */
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 20px; /* Rounded corners */
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
-      max-width: 450px; /* Maximum width for larger screens */
-      width: 100%; /* Full width on smaller screens */
-      text-align: center;
-      position: relative; /* For absolute positioning of animated elements */
-      overflow: hidden; /* Hide overflowing animations */
-      transition: background 0.5s ease; /* Smooth transition for background color */
+    .container{
+      background:#fff;padding:30px;border-radius:20px;
+      box-shadow:0 12px 24px rgba(0,0,0,.2);
+      max-width:450px;width:100%;text-align:center;position:relative;overflow:hidden;
+      transition:background .5s ease
     }
-    /* Heading style */
-    h2 {
-      color: #c2185b; /* Deep pink color */
-      margin-bottom: 25px;
-      font-size: 2em; /* Larger font size */
-      font-weight: 600; /* Bolder text */
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+    h2{color:#c2185b;margin-bottom:25px;font-size:2em;font-weight:600;text-shadow:0 2px 4px rgba(0,0,0,.1)}
+    label{font-size:1.3em;color:#444;display:block;margin-bottom:15px}
+    input[type="number"]{
+      width:100%;padding:14px;font-size:1.2em;border:2px solid #ff8a80;border-radius:12px;outline:0;
+      transition:border-color .3s,box-shadow .3s
     }
-    /* Label style */
-    label {
-      font-size: 1.3em;
-      color: #444;
-      display: block; /* Make it a block element */
-      margin-bottom: 15px;
+    input[type="number"]:focus{border-color:#c2185b;box-shadow:0 0 10px rgba(194,24,91,.4)}
+    button{
+      background:#c2185b;color:#fff;border:0;padding:15px 25px;font-size:1.3em;border-radius:12px;cursor:pointer;
+      transition:background .3s,transform .2s;margin-top:20px;width:100%;box-shadow:0 4px 8px rgba(0,0,0,.2);position:relative;overflow:hidden
     }
-    /* Input field styling */
-    input[type="number"] {
-      width: 100%;
-      padding: 14px;
-      font-size: 1.2em;
-      border: 2px solid #ff8a80; /* Pink border */
-      border-radius: 12px; /* Rounded input field */
-      outline: none; /* Remove default outline */
-      transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transitions for focus effects */
+    button:hover{background:#8e0038}
+    button:active{transform:scale(.95);box-shadow:0 2px 4px rgba(0,0,0,.2)}
+    .button-pulse{animation:pulse .6s ease-out}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+    #resultado{
+      margin-top:25px;font-size:1.5em;color:#00796b;font-weight:600;background:#e0f7fa;padding:10px;border-radius:10px;
+      box-shadow:0 2px 4px rgba(0,0,0,.1);position:relative;min-height:40px;opacity:0
     }
-    /* Input field focus effect */
-    input[type="number"]:focus {
-      border-color: #c2185b; /* Darker pink border on focus */
-      box-shadow: 0 0 10px rgba(194, 24, 91, 0.4); /* Glow effect on focus */
+    .result-show{animation:fadeInBounce .8s ease-out forwards}
+    @keyframes fadeInBounce{0%{opacity:0;transform:translateY(20px)}70%{opacity:1;transform:translateY(-5px)}100%{opacity:1;transform:translateY(0)}}
+    .vibrate{animation:vibrate .3s ease}
+    @keyframes vibrate{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+    .sparkles::before,.sparkles::after{
+      content:'';position:absolute;background:radial-gradient(circle,rgba(255,215,0,.8),transparent);
+      border-radius:50%;opacity:0;animation:sparkle .8s ease-out forwards
     }
-    /* Button styling */
-    button {
-      background: #c2185b; /* Deep pink background */
-      color: white;
-      border: none;
-      padding: 15px 25px;
-      font-size: 1.3em;
-      border-radius: 12px; /* Rounded button */
-      cursor: pointer; /* Pointer on hover */
-      transition: background 0.3s, transform 0.2s; /* Smooth transitions for hover/active */
-      margin-top: 20px;
-      width: 100%; /* Full width button */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Button shadow */
-      position: relative; /* For particle animations */
-      overflow: hidden; /* Hide overflowing particles */
-    }
-    /* Button hover effect */
-    button:hover {
-      background: #8e0038; /* Darker pink on hover */
-    }
-    /* Button active (click) effect */
-    button:active {
-      transform: scale(0.95); /* Slightly shrink on click */
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Smaller shadow on click */
-    }
-
-    /* New: Button Pulse Animation */
-    .button-pulse {
-      animation: pulse 0.6s ease-out;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.03); }
-      100% { transform: scale(1); }
-    }
-
-    /* Result display area */
-    #resultado {
-      margin-top: 25px;
-      font-size: 1.5em;
-      color: #00796b; /* Teal color for result */
-      font-weight: 600;
-      background: #e0f7fa; /* Light blue background for result */
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      position: relative;
-      min-height: 40px; /* Minimum height to prevent content jump */
-      opacity: 0; /* Initially hidden for fade-in */
-    }
-
-    /* New: Result Fade-in and Bounce Animation */
-    .result-show {
-      animation: fadeInBounce 0.8s ease-out forwards;
-    }
-    @keyframes fadeInBounce {
-      0% { opacity: 0; transform: translateY(20px); }
-      70% { opacity: 1; transform: translateY(-5px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Vibration animation for result */
-    .vibrate {
-      animation: vibrate 0.3s ease;
-    }
-    @keyframes vibrate {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-5px); }
-      40% { transform: translateX(5px); }
-      60% { transform: translateX(-3px); }
-      80% { transform: translateX(3px); }
-    }
-    /* Sparkle effects before and after the result */
-    .sparkles::before, .sparkles::after {
-      content: '';
-      position: absolute;
-      background: radial-gradient(circle, rgba(255, 215, 0, 0.8), transparent); /* Gold radial gradient */
-      border-radius: 50%;
-      opacity: 0;
-      animation: sparkle 0.8s ease-out forwards; /* Sparkle animation */
-    }
-    .sparkles::before {
-      width: 20px;
-      height: 20px;
-      top: -10px;
-      left: 10%;
-    }
-    .sparkles::after {
-      width: 15px;
-      height: 15px;
-      bottom: -10px;
-      right: 15%;
-    }
-    @keyframes sparkle {
-      0% { opacity: 0.8; transform: scale(0); }
-      100% { opacity: 0; transform: scale(1.5); }
-    }
-    /* Animated icon (e.g., money bag) */
-    .icon-anim {
-      position: absolute;
-      font-size: 2em;
-      top: 10px;
-      right: 20px;
-      animation: spin 1s linear; /* Spin animation */
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    /* Falling coin animation */
-    .coin {
-      position: absolute;
-      font-size: 1.5em;
-      animation: fall 2s linear forwards; /* Fall animation */
-      pointer-events: none; /* Do not block clicks */
-    }
-    @keyframes fall {
-      0% { transform: translateY(-100px); opacity: 1; }
-      100% { transform: translateY(300px); opacity: 0; }
-    }
-    /* Slot machine effect for result */
-    .slot-machine {
-      animation: slotSpin 1s ease-in-out; /* Slot spin animation */
-      filter: blur(2px); /* Blur effect during spin */
-    }
-    @keyframes slotSpin {
-      0% { transform: translateY(-20px); opacity: 0.5; }
-      50% { transform: translateY(20px); opacity: 0.7; }
-      100% { transform: translateY(0); opacity: 1; filter: blur(0); }
-    }
-    /* Particles bursting from the button */
-    .button-particle {
-      position: absolute;
-      font-size: 1em;
-      animation: particleBurst 0.8s ease-out forwards; /* Particle burst animation */
-      pointer-events: none;
-    }
-    @keyframes particleBurst {
-      0% { transform: translate(0, 0); opacity: 1; }
-      100% { transform: translate(var(--x), var(--y)); opacity: 0; } /* Use CSS variables for random direction */
-    }
-
-    /* New: Floating currency symbol */
-    .floating-currency {
-        position: absolute;
-        font-size: 2em;
-        opacity: 0;
-        animation: floatAndFade 2s ease-out forwards;
-        pointer-events: none;
-        z-index: 10; /* Ensure it's above other elements */
-    }
-    @keyframes floatAndFade {
-        0% { transform: translateY(0) translateX(0); opacity: 1; }
-        100% { transform: translateY(-100px) translateX(var(--float-x)); opacity: 0; }
-    }
-
-    /* Responsive adjustments for smaller screens */
-    @media (max-width: 500px) {
-      .container {
-        padding: 20px; /* Reduce padding */
-      }
-      h2 {
-        font-size: 1.6em; /* Smaller heading */
-      }
-      label, input, button {
-        font-size: 1em; /* Smaller font for inputs and buttons */
-      }
-      #resultado {
-        font-size: 1.3em; /* Smaller result font */
-      }
+    .sparkles::before{width:20px;height:20px;top:-10px;left:10%}
+    .sparkles::after{width:15px;height:15px;bottom:-10px;right:15%}
+    @keyframes sparkle{0%{opacity:.8;transform:scale(0)}100%{opacity:0;transform:scale(1.5)}}
+    .slot-machine{animation:slotSpin 1s ease-in-out;filter:blur(2px)}
+    @keyframes slotSpin{0%{transform:translateY(-20px);opacity:.5}50%{transform:translateY(20px);opacity:.7}100%{transform:translateY(0);opacity:1;filter:blur(0)}}
+    @media (max-width:500px){
+      .container{padding:20px}
+      h2{font-size:1.6em}
+      label,input,button{font-size:1em}
+      #resultado{font-size:1.3em}
     }
   </style>
+  <!-- Librerías con defer para que el DOM exista antes de ejecutar JS -->
+  <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+  <script defer>
+    // Estado/audio global
+    let cashRegisterSynth, noiseSynth, isAudioContextStarted = false;
+
+    async function startAudioContext(){
+      if (isAudioContextStarted) return;
+      try{
+        await Tone.start();
+        isAudioContextStarted = true;
+        cashRegisterSynth = new Tone.MetalSynth({
+          frequency:200,
+          envelope:{attack:0.001,decay:0.2,release:0.1},
+          harmonicity:3.1,modulationIndex:23,resonance:4000,octaves:1.5,volume:-8
+        }).toDestination();
+        noiseSynth = new Tone.NoiseSynth({
+          volume:-18,envelope:{attack:0.005,decay:0.1,release:0.05}
+        }).toDestination();
+      }catch(e){ console.warn("Audio no disponible:", e); }
+    }
+
+    function calcular(){
+      const input = document.getElementById('valorBase');
+      const out   = document.getElementById('resultado');
+      const val   = Number(input.value || 0);
+
+      // --- Lógica de cálculo (ajusta a tu fórmula real) ---
+      const total = Math.round(val * 1.16);
+      // -----------------------------------------------------
+
+      // Sonidos (si el usuario ya interactuó)
+      try{ cashRegisterSynth?.triggerAttackRelease("C4","8n"); noiseSynth?.triggerAttackRelease("8n"); }catch(e){}
+
+      // Confetti
+      try{ confetti({ particleCount:120, spread:70, origin:{ y:0.3 } }); }catch(e){}
+
+      // Mostrar resultado con animaciones
+      out.textContent = `Resultado: ${total.toLocaleString('es-MX')}`;
+      out.classList.remove('slot-machine','result-show','vibrate','sparkles');
+      void out.offsetWidth; // reinicia animaciones
+      out.classList.add('slot-machine','result-show','sparkles');
+    }
+
+    // Al cargar el DOM, conectamos el botón
+    window.addEventListener('DOMContentLoaded', ()=>{
+      const btn = document.getElementById('calculateButton');
+      btn.addEventListener('click', async ()=>{
+        await startAudioContext();
+        calcular();
+        btn.classList.remove('button-pulse'); void btn.offsetWidth; btn.classList.add('button-pulse');
+      });
+    });
+  </script>
 </head>
 <body>
   <div class="container" id="container">
     <h2>Calculadora Legendaria $,$</h2>
     <label for="valorBase">Ingresa el valor base (ej. 53600):</label>
-    <input type="number" id="valorBase" value="53600">
+    <input type="number" id="valorBase" value="53600" step="any" />
     <button id="calculateButton">Calcular</button>
     <div id="resultado"></div>
   </div>
-
-  <!-- Script for confetti animation -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <!-- Script for Tone.js (for sound effects) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-
-  <script>
-    // Initialize Tone.js components globally or lazily to ensure audio context is ready
-    let cashRegisterSynth, noiseSynth, isAudioContextStarted = false;
-
-  async function startAudioContext() {
-    if (!isAudioContextStarted) {
-      await Tone.start();
-      isAudioContextStarted = true;
-      cashRegisterSynth = new Tone.MetalSynth({
-        frequency: 200,
-        envelope: { attack: 0.001, decay: 0.2, release: 0.1 },
-        harmonicity: 3.1, modulationIndex: 23, resonance: 4000, octaves: 1.5, amplitude: 0.5
-      });
-      noiseSynth = new Tone.NoiseSynth({ volume: -15, envelope: { attack: 0.005, decay: 0.1, release: 0.05 }});
-      // Conectar a la salida
-      cashRegisterSynth.toDestination();
-      noiseSynth.toDestination();
-    }
-  }
-
-  // EJEMPLO de función calcular (ajusta la fórmula a tu lógica real)
-  function calcular() {
-    const input = document.getElementById('valorBase');
-    const out   = document.getElementById('resultado');
-    const val   = Number(input.value || 0);
-
-    // --- tu lógica de cálculo aquí ---
-    const total = Math.round(val * 1.16); // <-- reemplaza por tu fórmula real
-    // ----------------------------------
-
-    // Animación/sonido
-    try { cashRegisterSynth?.triggerAttackRelease("C4", "8n"); } catch(e){}
-    try { noiseSynth?.triggerAttackRelease("8n"); } catch(e){}
-
-    // Confetti
-    try { confetti({ particleCount: 120, spread: 70, origin: { y: 0.3 } }); } catch(e){}
-
-    // Mostrar resultado con clases que ya tienes en CSS
-    out.textContent = `Resultado: ${total.toLocaleString('es-MX')}`;
-    out.classList.remove('slot-machine','result-show','vibrate','sparkles');
-    void out.offsetWidth;               // reflow para reiniciar animaciones
-    out.classList.add('slot-machine','result-show','sparkles');
-  }
-
-  // Enlazar el botón: primero arrancar audio, luego calcular
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('calculateButton');
-    btn.addEventListener('click', async () => {
-      try { await startAudioContext(); } catch(e){}
-      calcular();
-      // efecto visual del botón si quieres
-      btn.classList.remove('button-pulse'); void btn.offsetWidth; btn.classList.add('button-pulse');
-    });
-  });
-</script>
+</body>
+</html>
