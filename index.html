@@ -69,8 +69,8 @@
   </style>
 
   <!-- Librerías (defer) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
   <script>
     // ======= Audio (opcional) =======
@@ -90,8 +90,8 @@
       }catch(e){ console.warn('Audio bloqueado/no disponible:', e); }
     }
 
-    // ======= Formateador MXN =======
-    const MXN = new Intl.NumberFormat('es-MX',{ style:'currency', currency:'MXN', minimumFractionDigits:2, maximumFractionDigits:2 });
+    // ======= Formateador MXN (No usado aquí, definido dentro de calcular) =======
+    // const MXN = new Intl.NumberFormat('es-MX',{ style:'currency', currency:'MXN', minimumFractionDigits:2, maximumFractionDigits:2 });
 
     // ======= Cálculo correcto =======
      function calcular() {
@@ -100,13 +100,14 @@
     const btn   = document.getElementById('calculateButton');
     const container = document.getElementById('container');
 
+    // Definición local del formateador
     const MXN = new Intl.NumberFormat('es-MX', {
       style: 'currency', currency: 'MXN', minimumFractionDigits: 2, maximumFractionDigits: 2
     });
 
     const X = parseFloat(input.value);
     if (!Number.isFinite(X) || X < 0) {
-      out.textContent = 'Ingresa una cantidad válida';
+      out.innerHTML = `<div class="result-card"><span style="color: #dc2626;">¡Ingresa una cantidad válida!</span></div>`;
       out.style.opacity = 1;
       return;
     }
@@ -137,8 +138,8 @@
       const colors = ['#f8bbd0','#b2ebf2','#c8e6c9','#fff9c4','#d1c4e9'];
       container.style.background = colors[Math.floor(Math.random()*colors.length)];
 
-      /// Pintar claro y legible
-    out.innerHTML = `
+        /// Pintar claro y legible
+        out.innerHTML = `
       <div class="result-card sparkles">
         <div class="row"><span class="label">Cantidad Depositada:</span><span class="value">${MXN.format(X)}</span></div>
         <div class="row"><span class="label">IVA descontado (16%):</span><span class="value">-${MXN.format(ivaDescontado)}</span></div>
@@ -148,24 +149,20 @@
       </div>
     `;
 
-    // Animaciones livianas (sin blur)
-    out.classList.remove('result-show');
-    void out.offsetWidth;
-    out.classList.add('result-show');
+    // Consolidamos TODAS las animaciones y visibilidad al final
+    // 1. Reiniciar animaciones de resultado (slot-machine, vibrate, result-show)
+    out.classList.remove('slot-machine', 'vibrate', 'result-show');
+    void out.offsetWidth; // Force reflow to re-trigger CSS animations
+
+    // 2. Aplicar animaciones de resultado
+    out.classList.add('slot-machine', 'vibrate', 'result-show');
     out.style.opacity = 1;
 
-    btn.classList.remove('button-pulse'); void btn.offsetWidth; btn.classList.add('button-pulse');
+    // 3. Aplicar animación de botón
+    btn.classList.remove('button-pulse');
+    void btn.offsetWidth; // Force reflow
+    btn.classList.add('button-pulse');
   }
-
-      // Animaciones/visibilidad
-      out.classList.remove('slot-machine','vibrate','result-show');
-      void out.offsetWidth;
-      out.classList.add('slot-machine','vibrate','result-show');
-      out.style.opacity = 1;
-
-      // efecto botón
-      btn.classList.remove('button-pulse'); void btn.offsetWidth; btn.classList.add('button-pulse');
-    }
 
     // ======= Enlaces de eventos =======
     window.addEventListener('DOMContentLoaded', ()=>{
@@ -187,5 +184,3 @@
   </div>
 </body>
 </html>
-
-
