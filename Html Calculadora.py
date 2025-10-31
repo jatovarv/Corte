@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculadora Legendaria 💸</title>
+  <title>Calculadora Legendaria $,$</title>
   <style>
     /* Basic body styling for full-screen display and gradient background */
     body {
@@ -236,7 +236,7 @@
 </head>
 <body>
   <div class="container" id="container">
-    <h2>Calculadora Legendaria 💸</h2>
+    <h2>Calculadora Legendaria $,$</h2>
     <label for="valorBase">Ingresa el valor base (ej. 53600):</label>
     <input type="number" id="valorBase" value="53600">
     <button id="calculateButton" onclick="calcular()">Calcular</button>
@@ -279,3 +279,4 @@
 
           // Initialize the noise synth for the click feel
           noiseSynth = new Tone.NoiseSynth({
+
