@@ -7,22 +7,22 @@
   <style>
     body{
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-      background:linear-gradient(135deg,#ff6f61,#ffb3a7);
+      /* CSS del body modificado */
+      background:linear-gradient(135deg,#ff6f61,#ffb3a7); /* Color degradado original como fallback */
+      background-size: 45%; /* <-- CLAVE: La imagen se escala al 45% del ancho de la ventana */
+      background-position: center; /* Centrar la imagen */
+      background-repeat: no-repeat; /* Asegurar que no se repita */
+      transition: background-image 1s ease; /* Transición para un cambio de foto más suave */
+
       display:flex;justify-content:center;align-items:center;height:100vh;margin:0;padding:15px;color:#333;overflow:hidden
     }
     .container{
-      /* Añadidas propiedades para gestionar la imagen de fondo */
-      background:rgba(255,255,255,0.85); /* Fondo blanco semitransparente para legibilidad */
-      background-size:cover;
-      background-position:center;
-      background-repeat:no-repeat;
-      backdrop-filter: blur(2px); /* Un ligero blur al fondo del contenedor puede ayudar */
-      /* Fin de propiedades de imagen */
-
+      /* CSS del container revertido para que se vea la imagen de fondo del body */
+      background:rgba(255,255,255,0.9); /* Fondo blanco semitransparente */
       padding:30px;border-radius:20px;
       box-shadow:0 12px 24px rgba(0,0,0,.2);
       max-width:520px;width:100%;text-align:center;position:relative;overflow:hidden;
-      transition:background-image .5s ease, background-color .5s ease;
+      transition:background .5s ease;
     }
     h2{color:#c2185b;margin-bottom:20px;font-size:2rem;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.08)}
     label{display:block;margin-bottom:10px;font-size:1.05rem;color:#444}
@@ -51,14 +51,13 @@
     .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e5e7eb}
     .row:last-child{border-bottom:none}
     .label{color:#334155;font-weight:600}
-    /* Aseguramos que el texto sea legible sobre cualquier fondo de tarjeta */
-    .value{color:#0f766e;font-weight:700; background: rgba(255,255,255,0.7); padding: 2px 5px; border-radius: 4px;}
+    .value{color:#0f766e;font-weight:700; background: rgba(255,255,255,0.9); padding: 2px 5px; border-radius: 4px;}
     .total .label{color:#0f172a}
     .total .value{color:#0b5d56;font-size:1.15rem}
 
-    /* Animaciones existentes (BLUR ELIMINADO de slot-machine) */
+    /* Animaciones existentes */
     .result-show{animation:fadeInBounce .6s ease-out forwards}
-    @keyframes fadeInBounce{0%{opacity:0;transform:translateY(12px)}70%{opacity:1;transform:translateY(-3px)}100%{opacity:1;transform:translateY(0)}}
+    @keyframes fadeInBounce{0%{opacity:0;transform:translateY(12px)}70%{opacity:1;transform:translateY(-3px)}100%{transform:translateY(0)}}
     .slot-machine{animation:slotSpin .7s ease-in-out;}
     @keyframes slotSpin{0%{transform:translateY(-10px);opacity:.6}50%{transform:translateY(10px);opacity:.85}100%{transform:translateY(0);opacity:1)}}
     .vibrate{animation:vibrate .25s ease}
@@ -104,6 +103,7 @@
     const out   = document.getElementById('resultado');
     const btn   = document.getElementById('calculateButton');
     const container = document.getElementById('container');
+    const body = document.body; // Obtenemos el elemento body
 
     // Definición local del formateador
     const MXN = new Intl.NumberFormat('es-MX', {
@@ -130,9 +130,7 @@
     // Paso 4: mitad para cada socio
     const porSocio = subTotal / 2;
 
-    // --- MODIFICACIÓN: Imagen de fondo dinámica con NOMBRES DE ARCHIVO DIRECTOS ---
-    // IMPORTANTE: Como las fotos están en la misma carpeta que index.html,
-    // solo necesitas sus nombres de archivo.
+    // --- MODIFICACIÓN: Imagen de fondo dinámica en el BODY con nombres directos ---
     const backgroundImages = [
       'foto1.jpeg', // Nombre directo del archivo para tu foto 1
       'foto2.jpeg', // Nombre directo del archivo para tu foto 2
@@ -142,8 +140,8 @@
     ];
     const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
 
-    // Aplicar imagen de fondo
-    container.style.backgroundImage = `url('${randomImage}')`;
+    // Aplicar imagen de fondo AL BODY
+    body.style.backgroundImage = `url('${randomImage}')`;
     // --- FIN MODIFICACIÓN ---
 
       // Sonidos + confetti (opcionales)
