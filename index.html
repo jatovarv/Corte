@@ -7,18 +7,19 @@
   <style>
     body{
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-      /* CSS del body modificado */
-      background:linear-gradient(135deg,#ff6f61,#ffb3a7); /* Color degradado original como fallback */
-      background-size: 45%; /* <-- CLAVE: La imagen se escala al 45% del ancho de la ventana */
+      /* CSS del body modificado para imagen grande (45%) y degradado de fallback */
+      background:linear-gradient(135deg,#ff6f61,#ffb3a7); /* Degradado original */
+      background-size: 45vw; /* CLAVE: 45% del ANCHO de la ventana (vw: viewport width) */
       background-position: center; /* Centrar la imagen */
       background-repeat: no-repeat; /* Asegurar que no se repita */
-      transition: background-image 1s ease; /* Transición para un cambio de foto más suave */
+      background-attachment: fixed; /* Opcional: fija la imagen si hubiera scroll */
+      transition: background-image 1s ease; /* Transición suave para el cambio de foto */
 
       display:flex;justify-content:center;align-items:center;height:100vh;margin:0;padding:15px;color:#333;overflow:hidden
     }
     .container{
-      /* CSS del container revertido para que se vea la imagen de fondo del body */
-      background:rgba(255,255,255,0.9); /* Fondo blanco semitransparente */
+      /* Revertido a un fondo sólido/semitransparente para que el contenido sea legible sobre el body */
+      background:rgba(255,255,255,0.9);
       padding:30px;border-radius:20px;
       box-shadow:0 12px 24px rgba(0,0,0,.2);
       max-width:520px;width:100%;text-align:center;position:relative;overflow:hidden;
@@ -130,19 +131,19 @@
     // Paso 4: mitad para cada socio
     const porSocio = subTotal / 2;
 
-    // --- MODIFICACIÓN: Imagen de fondo dinámica en el BODY con nombres directos ---
+    // --- IMAGEN DE FONDO EN EL BODY (45%) ---
     const backgroundImages = [
-      'foto1.jpeg', // Nombre directo del archivo para tu foto 1
-      'foto2.jpeg', // Nombre directo del archivo para tu foto 2
-      'foto3.jpeg', // Nombre directo del archivo para tu foto 3
-      'foto4.jpeg', // Nombre directo del archivo para tu foto 4
-      'foto5.jpeg'  // Nombre directo del archivo para tu foto 5
+      'foto1.jpeg', 
+      'foto2.jpeg', 
+      'foto3.jpeg', 
+      'foto4.jpeg', 
+      'foto5.jpeg'  
     ];
     const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
 
     // Aplicar imagen de fondo AL BODY
     body.style.backgroundImage = `url('${randomImage}')`;
-    // --- FIN MODIFICACIÓN ---
+    // --- FIN DE IMAGEN DE FONDO ---
 
       // Sonidos + confetti (opcionales)
       try{
