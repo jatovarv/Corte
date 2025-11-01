@@ -11,10 +11,18 @@
       display:flex;justify-content:center;align-items:center;height:100vh;margin:0;padding:15px;color:#333;overflow:hidden
     }
     .container{
-      background:#fff;padding:30px;border-radius:20px;
+      /* Añadidas propiedades para gestionar la imagen de fondo */
+      background:rgba(255,255,255,0.85); /* Fondo blanco semitransparente para legibilidad */
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      backdrop-filter: blur(2px); /* Un ligero blur al fondo del contenedor puede ayudar */
+      /* Fin de propiedades de imagen */
+
+      padding:30px;border-radius:20px;
       box-shadow:0 12px 24px rgba(0,0,0,.2);
       max-width:520px;width:100%;text-align:center;position:relative;overflow:hidden;
-      transition:background .5s ease
+      transition:background-image .5s ease, background-color .5s ease;
     }
     h2{color:#c2185b;margin-bottom:20px;font-size:2rem;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.08)}
     label{display:block;margin-bottom:10px;font-size:1.05rem;color:#444}
@@ -43,15 +51,16 @@
     .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e5e7eb}
     .row:last-child{border-bottom:none}
     .label{color:#334155;font-weight:600}
-    .value{color:#0f766e;font-weight:700}
+    /* Aseguramos que el texto sea legible sobre cualquier fondo de tarjeta */
+    .value{color:#0f766e;font-weight:700; background: rgba(255,255,255,0.7); padding: 2px 5px; border-radius: 4px;}
     .total .label{color:#0f172a}
     .total .value{color:#0b5d56;font-size:1.15rem}
 
-    /* Animaciones existentes */
+    /* Animaciones existentes (BLUR ELIMINADO de slot-machine) */
     .result-show{animation:fadeInBounce .6s ease-out forwards}
     @keyframes fadeInBounce{0%{opacity:0;transform:translateY(12px)}70%{opacity:1;transform:translateY(-3px)}100%{opacity:1;transform:translateY(0)}}
-    .slot-machine{animation:slotSpin .7s ease-in-out;filter:blur(1px)}
-    @keyframes slotSpin{0%{transform:translateY(-10px);opacity:.6}50%{transform:translateY(10px);opacity:.85}100%{transform:translateY(0);opacity:1;filter:blur(0)}}
+    .slot-machine{animation:slotSpin .7s ease-in-out;}
+    @keyframes slotSpin{0%{transform:translateY(-10px);opacity:.6}50%{transform:translateY(10px);opacity:.85}100%{transform:translateY(0);opacity:1)}}
     .vibrate{animation:vibrate .25s ease}
     @keyframes vibrate{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
     .sparkles::before,.sparkles::after{
@@ -68,7 +77,6 @@
     }
   </style>
 
-  <!-- Librerías (defer) -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
@@ -89,9 +97,6 @@
         audioReady = true;
       }catch(e){ console.warn('Audio bloqueado/no disponible:', e); }
     }
-
-    // ======= Formateador MXN (No usado aquí, definido dentro de calcular) =======
-    // const MXN = new Intl.NumberFormat('es-MX',{ style:'currency', currency:'MXN', minimumFractionDigits:2, maximumFractionDigits:2 });
 
     // ======= Cálculo correcto =======
      function calcular() {
@@ -125,18 +130,31 @@
     // Paso 4: mitad para cada socio
     const porSocio = subTotal / 2;
 
+    // --- MODIFICACIÓN: Imagen de fondo dinámica con NOMBRES DE ARCHIVO DIRECTOS ---
+    // IMPORTANTE: Como las fotos están en la misma carpeta que index.html,
+    // solo necesitas sus nombres de archivo.
+    const backgroundImages = [
+      'foto1.jpeg', // Nombre directo del archivo para tu foto 1
+      'foto2.jpeg', // Nombre directo del archivo para tu foto 2
+      'foto3.jpeg', // Nombre directo del archivo para tu foto 3
+      'foto4.jpeg', // Nombre directo del archivo para tu foto 4
+      'foto5.jpeg'  // Nombre directo del archivo para tu foto 5
+    ];
+    const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
+
+    // Aplicar imagen de fondo
+    container.style.backgroundImage = `url('${randomImage}')`;
+    // --- FIN MODIFICACIÓN ---
+
       // Sonidos + confetti (opcionales)
       try{
         if (audioReady){
           cashRegisterSynth?.triggerAttackRelease("C4","8n");
-          noiseSynth?.triggerAttackRelease("8n");
+          noiseSynth?.triggerAttackAttackRelease("8n");
         }
         confetti({ particleCount:100, spread:70, origin:{ y:0.6 }, colors:['#ff6f61','#ffb3a7','#c2185b','#00796b'] });
       }catch(e){}
 
-      // Fondo dinámico suave
-      const colors = ['#f8bbd0','#b2ebf2','#c8e6c9','#fff9c4','#d1c4e9'];
-      container.style.background = colors[Math.floor(Math.random()*colors.length)];
 
         /// Pintar claro y legible
         out.innerHTML = `
