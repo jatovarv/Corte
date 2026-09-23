@@ -8,10 +8,10 @@
     body{
       font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
       /* CSS del body modificado para imagen grande (45%) y degradado de fallback */
-      background:linear-gradient(135deg,#ff6f61,#ffb3a7); /* Degradado original */
-      background-size: 45vw; /* CLAVE: 45% del ANCHO de la ventana (vw: viewport width) */
-      background-position: center; /* Centrar la imagen */
-      background-repeat: no-repeat; /* Asegurar que no se repita */
+      background-image: none, linear-gradient(135deg,#ff6f61,#ffb3a7); /* Degradado original */
+      background-size: 45vw, cover; /* CLAVE: 45% del ANCHO de la ventana (vw: viewport width) */
+      background-position: center, center; /* Centrar la imagen */
+      background-repeat: no-repeat, no-repeat; /* Asegurar que no se repita */
       background-attachment: fixed; /* Opcional: fija la imagen si hubiera scroll */
       transition: background-image 1s ease; /* Transición suave para el cambio de foto */
 
@@ -72,6 +72,7 @@
     @keyframes sparkle{0%{opacity:.9;transform:scale(0)}100%{opacity:0;transform:scale(1.4)}}
 
     @media (max-width:520px){
+      body{background-size: 85vw, cover;}
       .container{padding:22px}
       h2{font-size:1.6rem}
     }
@@ -142,14 +143,14 @@
     const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
 
     // Aplicar imagen de fondo AL BODY
-    body.style.backgroundImage = `url('${randomImage}')`;
+    body.style.backgroundImage = `url('${randomImage}'), linear-gradient(135deg, #ff6f61, #ffb3a7)`;
     // --- FIN DE IMAGEN DE FONDO ---
 
       // Sonidos + confetti (opcionales)
       try{
         if (audioReady){
           cashRegisterSynth?.triggerAttackRelease("C4","8n");
-          noiseSynth?.triggerAttackAttackRelease("8n");
+          noiseSynth?.triggerAttackRelease("8n");
         }
         confetti({ particleCount:100, spread:70, origin:{ y:0.6 }, colors:['#ff6f61','#ffb3a7','#c2185b','#00796b'] });
       }catch(e){}
