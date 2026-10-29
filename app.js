@@ -12,6 +12,7 @@
   var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   var soundEnabled = true;
   var player = CorteEfectos.crearAudio(window.AudioContext || window.webkitAudioContext);
+  var soundRequest = 0;
   var confettiTimer;
   var offlineReady = false;
   try { soundEnabled = localStorage.getItem('corte-prueba-sonido') !== 'off'; } catch (error) { /* Preferencia opcional. */ }
@@ -21,9 +22,18 @@
     $('soundToggle').setAttribute('aria-label', soundEnabled ? 'Silenciar efectos de sonido' : 'Activar efectos de sonido');
     $('soundLabel').textContent = soundEnabled ? 'Sonido activado' : 'Sonido silenciado';
   }
-  function playSound() {
+  function stopSound() {
+    soundRequest++;
+    player.detener();
+  }
+  function playSound(deposito) {
     if (!soundEnabled) return;
-    player.reproducir().then(function () { $('soundNotice').hidden = true; }).catch(function (error) {
+    var request = ++soundRequest;
+    var tipo = deposito === undefined ? 'actual' : CorteEfectos.sonidoParaDeposito(deposito);
+    player.reproducir(tipo).then(function (played) {
+      if (request === soundRequest && soundEnabled && played !== false) $('soundNotice').hidden = true;
+    }).catch(function (error) {
+      if (request !== soundRequest || !soundEnabled) return;
       $('soundNotice').textContent = 'El sonido no está disponible. Puedes seguir calculando con normalidad.';
       $('soundNotice').hidden = false;
       console.warn('Efecto de sonido no disponible:', error);
@@ -34,7 +44,7 @@
     try { localStorage.setItem('corte-prueba-sonido', soundEnabled ? 'on' : 'off'); } catch (error) { /* No afecta el cálculo. */ }
     updateSoundButton();
     if (soundEnabled) playSound();
-    else $('soundNotice').hidden = true;
+    else { stopSound(); $('soundNotice').hidden = true; }
   });
   updateSoundButton();
 
@@ -91,6 +101,7 @@
     event.preventDefault();
     var result = CorteCore.calcularImporte($('valorBase').value);
     if (!result) {
+      stopSound();
       $('inputError').hidden = false;
       $('valorBase').setAttribute('aria-invalid','true');
       $('resultado').hidden = true;
@@ -120,7 +131,7 @@
       restartAnimation($('shareAmount'),'is-celebrating');
       celebrate();
     } catch (error) { console.warn('No se pudo reproducir el efecto visual:', error); }
-    playSound();
+    playSound(result.deposito);
   });
   $('valorBase').addEventListener('input', function () {
     $('inputError').hidden = true;

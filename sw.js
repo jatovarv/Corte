@@ -1,5 +1,5 @@
 /* Aumentar VERSION cuando cambien los archivos de esta candidata. */
-const VERSION = 'corte-legendaria-prueba-20261028-v5';
+const VERSION = 'corte-legendaria-prueba-20261029-v6';
 const PREFIX = 'corte-legendaria-prueba-';
 const RESOURCES = [
   './','./index.html','./styles.css','./core.js','./efectos.js','./app.js','./manifest.webmanifest',
