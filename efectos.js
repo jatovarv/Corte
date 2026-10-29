@@ -1,4 +1,4 @@
-/* Efectos locales: sin librerías, descargas ni peticiones externas. */
+/* Efectos locales: grabaciones elegidas y sonido intermedio sin dependencias externas. */
 var CorteEfectos = (function () {
   'use strict';
   function sonidoParaDeposito(deposito) {
@@ -12,12 +12,18 @@ var CorteEfectos = (function () {
     var context;
     var voices = [];
     var generation = 0;
+    var recordings = {
+      triste: { src: 'assets/triste-kirbydx-175409.mp3', volume: 0.37 },
+      fanfarria: { src: 'assets/fanfarria-joepayne-413201.mp3', volume: 0.8 }
+    };
+    var buffers = {};
+    var loading = {};
 
     function limpiar(voice) {
       if (voice.cleaned) return;
       voice.cleaned = true;
-      if (voice.oscillator) voice.oscillator.onended = null;
-      [voice.oscillator, voice.filter, voice.gain].forEach(function (node) {
+      if (voice.source) voice.source.onended = null;
+      [voice.source, voice.gain].forEach(function (node) {
         if (node) try { node.disconnect(); } catch (error) { /* Nodo ya desconectado. */ }
       });
       voices = voices.filter(function (item) { return item !== voice; });
@@ -35,40 +41,68 @@ var CorteEfectos = (function () {
             voice.gain.gain.setValueAtTime(0, now);
           }
         } catch (error) { /* La desconexión también silencia un contexto cerrado. */ }
-        if (voice.oscillator) try { voice.oscillator.stop(now); } catch (error) { /* Puede haber terminado. */ }
+        if (voice.source) try { voice.source.stop(now); } catch (error) { /* Puede haber terminado. */ }
         limpiar(voice);
       });
     }
 
-    function nota(frequency, at, duration, volume, brass, slideTo) {
-      var voice = { oscillator: null, gain: null, filter: null, cleaned: false };
+    function nota(frequency, at) {
+      var voice = { source: null, gain: null, cleaned: false };
       voices.push(voice);
       try {
-        var oscillator = voice.oscillator = context.createOscillator();
+        var oscillator = voice.source = context.createOscillator();
         var gain = voice.gain = context.createGain();
-        oscillator.type = brass ? 'sawtooth' : 'sine';
+        oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(frequency, at);
-        if (slideTo) {
-          oscillator.frequency.setValueAtTime(frequency, at + 0.1);
-          oscillator.frequency.linearRampToValueAtTime(slideTo, at + duration * 0.85);
-        }
-        if (brass) {
-          var filter = voice.filter = context.createBiquadFilter();
-          filter.type = 'lowpass';
-          filter.Q.value = 0.65;
-          filter.frequency.setValueAtTime(Math.min(2400, frequency * 2.2), at);
-          filter.frequency.linearRampToValueAtTime(Math.min(2400, frequency * 4.5), at + 0.05);
-          filter.frequency.linearRampToValueAtTime(Math.min(2400, frequency * 2.2), at + duration);
-          oscillator.connect(filter);
-          filter.connect(gain);
-        } else oscillator.connect(gain);
+        oscillator.connect(gain);
         gain.gain.setValueAtTime(0, at);
-        gain.gain.linearRampToValueAtTime(volume, at + (brass ? 0.025 : 0.006));
-        gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+        gain.gain.linearRampToValueAtTime(0.045, at + 0.006);
+        gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.23);
         gain.connect(context.destination);
         oscillator.onended = function () { limpiar(voice); };
         oscillator.start(at);
-        oscillator.stop(at + duration + 0.02);
+        oscillator.stop(at + 0.25);
+      } catch (error) {
+        limpiar(voice);
+        throw error;
+      }
+    }
+
+    function cargar(tipo) {
+      if (buffers[tipo]) return Promise.resolve(buffers[tipo]);
+      if (loading[tipo]) return loading[tipo];
+      var decoder = context;
+      var pending = Promise.resolve().then(function () {
+        return fetch(recordings[tipo].src);
+      }).then(function (response) {
+        if (!response.ok) throw new Error('No se pudo abrir la grabación: ' + response.status);
+        return response.arrayBuffer();
+      }).then(function (data) {
+        return decoder.decodeAudioData(data);
+      }).then(function (buffer) {
+        buffers[tipo] = buffer;
+        delete loading[tipo];
+        return buffer;
+      }).catch(function (error) {
+        delete loading[tipo];
+        throw error;
+      });
+      loading[tipo] = pending;
+      return pending;
+    }
+
+    function grabacion(tipo, buffer, at) {
+      var voice = { source: null, gain: null, cleaned: false };
+      voices.push(voice);
+      try {
+        var source = voice.source = context.createBufferSource();
+        var gain = voice.gain = context.createGain();
+        source.buffer = buffer;
+        source.connect(gain);
+        gain.connect(context.destination);
+        gain.gain.setValueAtTime(recordings[tipo].volume, at);
+        source.onended = function () { limpiar(voice); };
+        source.start(at);
       } catch (error) {
         limpiar(voice);
         throw error;
@@ -87,21 +121,15 @@ var CorteEfectos = (function () {
         try {
           if (!context || context.state === 'closed') context = new Context();
           var ready = context.state === 'running' ? Promise.resolve() : context.resume();
-          return Promise.resolve(ready).then(function () {
+          var decoded = recordings[tipo] ? cargar(tipo) : Promise.resolve(null);
+          return Promise.all([ready, decoded]).then(function (results) {
             if (ticket !== generation) return false;
             if (context.state !== 'running') throw new Error('Audio no iniciado');
             var start = context.currentTime + 0.015;
-            if (tipo === 'triste') {
-              [233.08, 220, 207.65, 196].forEach(function (frequency, i) {
-                nota(frequency, start + i * 0.31, i === 3 ? 0.72 : 0.26, 0.065, true, i === 3 ? 146.83 : null);
-              });
-            } else if (tipo === 'fanfarria') {
-              [0, 0.15, 0.30].forEach(function (offset) { nota(523.25, start + offset, 0.12, 0.05, true); });
-              nota(783.99, start + 0.48, 0.16, 0.05, true);
-              nota(1046.50, start + 0.70, 0.50, 0.035, true);
-              [523.25, 659.25, 783.99].forEach(function (frequency) { nota(frequency, start + 0.70, 0.50, 0.018, true); });
+            if (recordings[tipo]) {
+              grabacion(tipo, results[1], start);
             } else {
-              [1318.51, 1760, 2637.02].forEach(function (frequency, i) { nota(frequency, start + i * 0.055, 0.23, 0.045, false); });
+              [1318.51, 1760, 2637.02].forEach(function (frequency, i) { nota(frequency, start + i * 0.055); });
             }
             return true;
           }).catch(function (error) {

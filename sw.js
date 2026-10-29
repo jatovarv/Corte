@@ -1,9 +1,10 @@
 /* Aumentar VERSION cuando cambien los archivos de esta candidata. */
-const VERSION = 'corte-legendaria-prueba-20261029-v6';
+const VERSION = 'corte-legendaria-prueba-20261029-v7';
 const PREFIX = 'corte-legendaria-prueba-';
 const RESOURCES = [
   './','./index.html','./styles.css','./core.js','./efectos.js','./app.js','./manifest.webmanifest',
   './assets/foto1.jpg','./assets/foto2.jpg','./assets/foto3.jpg','./assets/foto4.jpg','./assets/foto5.jpg','./assets/titulo-monopoly.png',
+  './assets/triste-kirbydx-175409.mp3','./assets/fanfarria-joepayne-413201.mp3',
   './assets/icon.svg','./assets/icon-192.png','./assets/icon-512.png','./assets/icon-maskable-512.png','./assets/apple-touch-icon.png'
 ];
 self.addEventListener('install', event => {
