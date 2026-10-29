@@ -1,204 +1,92 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-MX">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#b62362">
+  <meta name="description" content="Calcula tu corte en pesos mexicanos y reparte el resultado en dos partes iguales.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Calculadora Legendaria 💸</title>
-  <style>
-    body{
-      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-      /* CSS del body modificado para imagen grande (45%) y degradado de fallback */
-      background-image: none, linear-gradient(135deg,#ff6f61,#ffb3a7); /* Degradado original */
-      background-size: 45vw, cover; /* CLAVE: 45% del ANCHO de la ventana (vw: viewport width) */
-      background-position: center, center; /* Centrar la imagen */
-      background-repeat: no-repeat, no-repeat; /* Asegurar que no se repita */
-      background-attachment: fixed; /* Opcional: fija la imagen si hubiera scroll */
-      transition: background-image 1s ease; /* Transición suave para el cambio de foto */
-
-      display:flex;justify-content:center;align-items:center;height:100vh;margin:0;padding:15px;color:#333;overflow:hidden
-    }
-    .container{
-      /* Revertido a un fondo sólido/semitransparente para que el contenido sea legible sobre el body */
-      background:rgba(255,255,255,0.9);
-      padding:30px;border-radius:20px;
-      box-shadow:0 12px 24px rgba(0,0,0,.2);
-      max-width:520px;width:100%;text-align:center;position:relative;overflow:hidden;
-      transition:background .5s ease;
-    }
-    h2{color:#c2185b;margin-bottom:20px;font-size:2rem;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.08)}
-    label{display:block;margin-bottom:10px;font-size:1.05rem;color:#444}
-    input[type="number"]{
-      width:100%;padding:14px;font-size:1.1rem;border:2px solid #ff8a80;border-radius:12px;outline:none;
-      transition:border-color .3s,box-shadow .3s
-    }
-    input[type="number"]:focus{border-color:#c2185b;box-shadow:0 0 10px rgba(194,24,91,.25)}
-    button{
-      background:#c2185b;color:#fff;border:none;padding:14px 22px;border-radius:12px;font-size:1.1rem;cursor:pointer;width:100%;
-      margin-top:16px;box-shadow:0 4px 8px rgba(0,0,0,.2);transition:background .25s,transform .15s
-    }
-    button:hover{background:#8e0038}
-    button:active{transform:scale(.98)}
-    .button-pulse{animation:pulse .6s ease-out}
-    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-
-    /* Tarjeta de resultados clara y legible */
-    #resultado{
-      margin-top:18px; opacity:0;
-    }
-    .result-card{
-      text-align:left; background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:16px;
-      box-shadow:0 6px 16px rgba(0,0,0,.08);
-    }
-    .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e5e7eb}
-    .row:last-child{border-bottom:none}
-    .label{color:#334155;font-weight:600}
-    .value{color:#0f766e;font-weight:700; background: rgba(255,255,255,0.9); padding: 2px 5px; border-radius: 4px;}
-    .total .label{color:#0f172a}
-    .total .value{color:#0b5d56;font-size:1.15rem}
-
-    /* Animaciones existentes */
-    .result-show{animation:fadeInBounce .6s ease-out forwards}
-    @keyframes fadeInBounce{0%{opacity:0;transform:translateY(12px)}70%{opacity:1;transform:translateY(-3px)}100%{transform:translateY(0)}}
-    .slot-machine{animation:slotSpin .7s ease-in-out;}
-    @keyframes slotSpin{0%{transform:translateY(-10px);opacity:.6}50%{transform:translateY(10px);opacity:.85}100%{transform:translateY(0);opacity:1)}}
-    .vibrate{animation:vibrate .25s ease}
-    @keyframes vibrate{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
-    .sparkles::before,.sparkles::after{
-      content:'';position:absolute;background:radial-gradient(circle,rgba(255,215,0,.8),transparent);
-      border-radius:50%;opacity:0;animation:sparkle .8s ease-out forwards
-    }
-    .sparkles::before{width:18px;height:18px;top:-8px;left:12%}
-    .sparkles::after{width:14px;height:14px;bottom:-8px;right:14%}
-    @keyframes sparkle{0%{opacity:.9;transform:scale(0)}100%{opacity:0;transform:scale(1.4)}}
-
-    @media (max-width:520px){
-      body{background-size: 85vw, cover;}
-      .container{padding:22px}
-      h2{font-size:1.6rem}
-    }
-  </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-
-  <script>
-    // ======= Audio (opcional) =======
-    let cashRegisterSynth, noiseSynth, audioReady = false;
-    async function startAudio(){
-      if (audioReady) return;
-      try{
-        await Tone.start();
-        cashRegisterSynth = new Tone.MetalSynth({
-          frequency:200, envelope:{attack:0.001,decay:0.2,release:0.1},
-          harmonicity:3.1, modulationIndex:23, resonance:4000, octaves:1.5, volume:-8
-        }).toDestination();
-        noiseSynth = new Tone.NoiseSynth({
-          volume:-18, envelope:{attack:0.005,decay:0.1,release:0.05}
-        }).toDestination();
-        audioReady = true;
-      }catch(e){ console.warn('Audio bloqueado/no disponible:', e); }
-    }
-
-    // ======= Cálculo correcto =======
-     function calcular() {
-    const input = document.getElementById('valorBase');
-    const out   = document.getElementById('resultado');
-    const btn   = document.getElementById('calculateButton');
-    const container = document.getElementById('container');
-    const body = document.body; // Obtenemos el elemento body
-
-    // Definición local del formateador
-    const MXN = new Intl.NumberFormat('es-MX', {
-      style: 'currency', currency: 'MXN', minimumFractionDigits: 2, maximumFractionDigits: 2
-    });
-
-    const X = parseFloat(input.value);
-    if (!Number.isFinite(X) || X < 0) {
-      out.innerHTML = `<div class="result-card"><span style="color: #dc2626;">¡Ingresa una cantidad válida!</span></div>`;
-      out.style.opacity = 1;
-      return;
-    }
-
-    // Paso 1: quitar IVA (÷ 1.16)
-    const baseSinIVA   = X / 1.16;
-    const ivaDescontado = X - baseSinIVA;      // ← monto de IVA
-
-    // Paso 2: restar 3% SOBRE LA BASE SIN IVA
-    const descuento3 = baseSinIVA * 0.03;
-
-    // Paso 3: subtotal después del 3%
-    const subTotal = baseSinIVA - descuento3;
-
-    // Paso 4: mitad para cada socio
-    const porSocio = subTotal / 2;
-
-    // --- IMAGEN DE FONDO EN EL BODY (45%) ---
-    const backgroundImages = [
-      'foto1.jpeg', 
-      'foto2.jpeg', 
-      'foto3.jpeg', 
-      'foto4.jpeg', 
-      'foto5.jpeg'  
-    ];
-    const randomImage = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
-
-    // Aplicar imagen de fondo AL BODY
-    body.style.backgroundImage = `url('${randomImage}'), linear-gradient(135deg, #ff6f61, #ffb3a7)`;
-    // --- FIN DE IMAGEN DE FONDO ---
-
-      // Sonidos + confetti (opcionales)
-      try{
-        if (audioReady){
-          cashRegisterSynth?.triggerAttackRelease("C4","8n");
-          noiseSynth?.triggerAttackRelease("8n");
-        }
-        confetti({ particleCount:100, spread:70, origin:{ y:0.6 }, colors:['#ff6f61','#ffb3a7','#c2185b','#00796b'] });
-      }catch(e){}
-
-
-        /// Pintar claro y legible
-        out.innerHTML = `
-      <div class="result-card sparkles">
-        <div class="row"><span class="label">Cantidad Depositada:</span><span class="value">${MXN.format(X)}</span></div>
-        <div class="row"><span class="label">IVA descontado (16%):</span><span class="value">-${MXN.format(ivaDescontado)}</span></div>
-        <div class="row"><span class="label">3% Descontado:</span><span class="value">-${MXN.format(descuento3)}</span></div>
-        <div class="row total"><span class="label">Sub Total:</span><span class="value">${MXN.format(subTotal)}</span></div>
-        <div class="row total"><span class="label">Le toca a cada uno de los Socios:</span><span class="value">${MXN.format(porSocio)}</span></div>
-      </div>
-    `;
-
-    // Consolidamos TODAS las animaciones y visibilidad al final
-    // 1. Reiniciar animaciones de resultado (slot-machine, vibrate, result-show)
-    out.classList.remove('slot-machine', 'vibrate', 'result-show');
-    void out.offsetWidth; // Force reflow to re-trigger CSS animations
-
-    // 2. Aplicar animaciones de resultado
-    out.classList.add('slot-machine', 'vibrate', 'result-show');
-    out.style.opacity = 1;
-
-    // 3. Aplicar animación de botón
-    btn.classList.remove('button-pulse');
-    void btn.offsetWidth; // Force reflow
-    btn.classList.add('button-pulse');
-  }
-
-    // ======= Enlaces de eventos =======
-    window.addEventListener('DOMContentLoaded', ()=>{
-      const btn = document.getElementById('calculateButton');
-      btn.addEventListener('click', async ()=>{
-        await startAudio(); // inicia audio en primer clic (opcional)
-        calcular();         // calcula y muestra
-      });
-    });
-  </script>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" as="image" href="assets/foto2.jpg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="core.js" defer></script>
+  <script src="efectos.js" defer></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
-  <div class="container" id="container">
-    <h2>Calculadora Legendaria 💸</h2>
-    <label for="valorBase">Ingresa la cantidad depositada (ej. 53,600.00):</label>
-    <input type="number" id="valorBase" value="53600" step="any" />
-    <button id="calculateButton">Calcular</button>
-    <div id="resultado"></div>
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Calculadora Legendaria 💸, inicio">
+        <img src="assets/icon.svg" width="44" height="44" alt="">
+        <span>Calculadora<br><strong>Legendaria</strong></span>
+      </a>
+      <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true" aria-label="Silenciar efectos de sonido">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-slash" d="m15 9 6 6m0-6-6 6"/></svg>
+        <span id="soundLabel">Sonido activado</span>
+      </button>
+    </header>
+
+    <main>
+      <div class="intro title-illustrated">
+        <img class="title-art" src="assets/titulo-monopoly.png" alt="" aria-hidden="true" width="2145" height="733" decoding="async">
+        <h1>Calculadora <span class="title-last">Legendaria 💸</span></h1>
+      </div>
+
+      <div class="workspace">
+        <section class="gallery" aria-label="Galería de fotografías">
+          <div class="photo-heading"><span class="pill">Un toque de alegría <span aria-hidden="true">✦</span></span><span class="photo-count" id="photoCount">02 / 05</span></div>
+          <figure class="photo-frame" id="photoFrame">
+            <img id="galleryPhoto" src="assets/foto2.jpg" alt="Un perro de orejas largas con capa y dos gatos a su lado." width="800" height="1200" fetchpriority="high" decoding="async">
+            <figcaption class="sr-only" id="photoCaption">Fotografía 2 de 5.</figcaption>
+          </figure>
+          <div class="photo-footer">
+            <p>La parte más bonita de hacer cuentas.</p>
+            <div class="photo-controls">
+              <button class="round-button" id="previousPhoto" type="button" aria-label="Ver fotografía anterior">←</button>
+              <button class="round-button" id="nextPhoto" type="button" aria-label="Ver fotografía siguiente">→</button>
+            </div>
+          </div>
+          <p id="photoError" class="photo-error" hidden>No se pudo abrir esta foto. Prueba con la siguiente.</p>
+        </section>
+
+        <section class="calculator" aria-labelledby="calculatorTitle">
+          <div class="calculator-heading"><span class="step-mark" aria-hidden="true">$</span><div><p class="eyebrow">EL CORTE DE HOY</p><h2 id="calculatorTitle">Vamos a calcular</h2></div></div>
+          <form id="calculatorForm" novalidate>
+            <label for="valorBase">Cantidad depositada</label>
+            <div class="input-wrap"><span aria-hidden="true">$</span><input type="number" inputmode="decimal" id="valorBase" name="deposito" value="53600" placeholder="Ej. 53600.00" min="0" step="any" required aria-describedby="inputHelp inputError"></div>
+            <p class="input-help" id="inputHelp">Pesos mexicanos · sin separadores de miles.</p>
+            <p class="input-error" id="inputError" role="alert" hidden>Ingresa una cantidad válida, igual o mayor que cero.</p>
+            <button class="calculate-button" id="calculateButton" type="submit"><span>Calcular mi corte</span><span aria-hidden="true">↗</span></button>
+          </form>
+
+          <div class="empty-result" id="emptyResult"><span aria-hidden="true">✦</span><p>Tu participación aparecerá aquí.</p></div>
+          <div id="resultado" class="result" hidden>
+            <div class="share-card" id="shareCard"><p>A cada socio le toca</p><strong class="share-amount" id="shareAmount"></strong><span>Reparto en dos partes iguales</span></div>
+            <dl class="breakdown">
+              <div><dt>Cantidad depositada</dt><dd id="depositAmount"></dd></div>
+              <div><dt>IVA extraído (16%)</dt><dd id="vatAmount"></dd></div>
+              <div><dt>3% sobre la base sin IVA</dt><dd id="discountAmount"></dd></div>
+              <div class="subtotal-row"><dt>Subtotal a repartir</dt><dd id="subtotalAmount"></dd></div>
+            </dl>
+          </div>
+          <p class="sr-only" id="resultAnnouncement" role="status" aria-live="polite" aria-atomic="true"></p>
+          <p class="sound-notice" id="soundNotice" role="status" hidden></p>
+          <details class="calculation-help"><summary>¿Cómo se hace la cuenta?</summary><p>Se divide el depósito entre 1.16 para extraer el IVA. A esa base se le descuenta el 3% y el subtotal se divide entre dos socios. Los importes se muestran con dos decimales.</p></details>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div><span class="status-dot" id="statusDot" aria-hidden="true"></span><span id="offlineStatus" role="status">Preparando uso sin conexión…</span><span class="trial-label">Versión de prueba</span></div>
+      <details class="install-help"><summary>Usarla en tu iPhone</summary><p>Cuando esta prueba tenga una dirección HTTPS, ábrela en Safari y elige <strong>Compartir → Añadir a pantalla de inicio</strong>. Si aparece, activa <strong>Abrir como app web</strong>. La primera carga necesita conexión; espera el aviso «Lista para usar sin conexión».</p><p>Esta copia local todavía no tiene una dirección pública.</p></details>
+      <button class="install-button" id="installButton" type="button" hidden>Instalar en este dispositivo</button>
+    </footer>
   </div>
+  <div id="celebration" aria-hidden="true"></div>
+  <noscript><p class="noscript-notice">Activa JavaScript para usar la calculadora.</p></noscript>
 </body>
 </html>
