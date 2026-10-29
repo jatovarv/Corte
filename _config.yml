@@ -1,0 +1,16 @@
+# GitHub Pages publica el runtime; pruebas y archivos originales quedan en Git.
+exclude:
+  - README.md
+  - pruebas
+  - .github
+  - foto1.jpeg
+  - foto2.jpeg
+  - foto3.jpeg
+  - foto4.jpeg
+  - foto5.jpeg
+  - Vista-previa.html
+  - capturas
+  - ABRIR.command
+  - probar.py
+  - LEEME.txt
+  - CAMBIOS-Y-PRUEBAS.txt
