@@ -55,10 +55,11 @@ function run(argv) {
     };
     var storage = { getItem:function(){return options.muted?'off':null;}, setItem:function(){} };
     var fakeConsole = {warn:function(){logs.push([].slice.call(arguments).map(String).join(' '));}};
-    new Function('window','document','localStorage','navigator','location','CorteCore','CorteEfectos','console','setTimeout','clearTimeout',source)(window,document,storage,{onLine:true},{protocol:'file:',hostname:''},core,effects,fakeConsole,function(handler){timers.push(handler);return timers.length;},function(){});
+    new Function('window','document','localStorage','navigator','location','CorteCore','CorteEfectos','console','setTimeout','clearTimeout',source)(window,document,storage,{onLine:true},{protocol:'file:',hostname:''},core,options.effects || effects,fakeConsole,function(handler){timers.push(handler);return timers.length;},function(){});
     return {
       nodes:nodes, get:get, media:media, warnings:logs,
       submit:function(value){get('valorBase').value=value;get('calculatorForm').events.submit({preventDefault:function(){}});},
+      toggleSound:function(){get('soundToggle').events.click();},
       particles:function(){return get('celebration').children.reduce(function(sum,fragment){return sum+fragment.children.length;},0);}
     };
   }
@@ -98,10 +99,64 @@ function run(argv) {
   invalid.get('valorBase').events.input();
   check('Editar cantidad oculta resultado anterior', invalid.get('resultado').hidden && !invalid.get('emptyResult').hidden && invalid.get('resultAnnouncement').textContent==='');
 
+  // Observa el tipo enviado por app.js usando el selector real, sin emitir audio.
+  function soundFixture(deferred) {
+    var log={types:[],stops:0,pending:[]};
+    var instrumented={sonidoParaDeposito:effects.sonidoParaDeposito,crearAudio:function(){return {
+      disponible:true,
+      detener:function(){log.stops++;},
+      reproducir:function(type){
+        log.types.push(type);
+        if(!deferred) return Promise.resolve(true);
+        return new Promise(function(resolve,reject){log.pending.push({resolve:resolve,reject:reject});});
+      }
+    };}};
+    var ui=fixture({effects:instrumented});
+    ui.soundLog=log;
+    return ui;
+  }
+  var routing=soundFixture(false);
+  [[59999.99,'triste'],[60000,'actual'],[60000.01,'actual'],[99999.99,'actual'],[100000,'actual'],[100000.01,'fanfarria'],[0,'triste']].forEach(function(item){
+    routing.submit(String(item[0]));
+    check('UI selecciona por depósito '+item[0],routing.soundLog.types[routing.soundLog.types.length-1]===item[1]);
+    check('UI conserva importe y confeti para '+item[0],routing.get('shareAmount').textContent===core.formatearMoneda(core.calcularImporte(item[0]).porSocio) && routing.particles()===32);
+  });
+  var routed=routing.soundLog.types.length;
+  routing.submit('');
+  routing.submit('-1');
+  check('Inválidos detienen sonido sin iniciar otro',routing.soundLog.stops===2 && routing.soundLog.types.length===routed && routing.get('resultado').hidden);
+  routing.toggleSound();
+  routing.submit('100000.01');
+  check('Silenciar detiene y evita fanfarria sin bloquear cálculo',routing.soundLog.stops===3 && routing.soundLog.types.length===routed && routing.get('shareAmount').textContent===core.formatearMoneda(core.calcularImporte(100000.01).porSocio) && routing.particles()===32);
+  routing.toggleSound();
+  check('Reactivar sonido usa preview actual',routing.soundLog.types.length===routed+1 && routing.soundLog.types[routed]==='actual' && routing.get('soundToggle').attributes['aria-pressed']==='true');
+
+  var pendingMuted=soundFixture(true);
+  pendingMuted.submit('59999.99');
+  check('Resume asíncrono no bloquea resultado ni confeti',!pendingMuted.get('resultado').hidden && pendingMuted.particles()===32 && pendingMuted.soundLog.pending.length===1);
+  pendingMuted.toggleSound();
+  pendingMuted.soundLog.pending[0].reject(new Error('Rechazo después de silenciar'));
+  var pendingInvalid=soundFixture(true);
+  pendingInvalid.submit('100000.01');
+  pendingInvalid.submit('-1');
+  pendingInvalid.soundLog.pending[0].reject(new Error('Rechazo después de entrada inválida'));
+  var pendingLatest=soundFixture(true);
+  pendingLatest.submit('59999.99');
+  pendingLatest.submit('100000.01');
+  pendingLatest.soundLog.pending[0].reject(new Error('Rechazo de petición anterior'));
+  pendingLatest.soundLog.pending[1].resolve(true);
+  var pendingFailure=soundFixture(true);
+  pendingFailure.submit('60000');
+  pendingFailure.soundLog.pending[0].reject(new Error('Resume activo rechazado'));
+
   Promise.resolve().then(function(){}).then(function(){}).then(function(){
     check('API de audio ausente informa sin bloquear', !reduced.get('soundNotice').hidden && reduced.get('soundNotice').textContent.indexOf('seguir calculando')>=0 && reduced.warnings.length===1);
-    check('Constructor de audio fallido informa sin bloquear', !failed.get('soundNotice').hidden && failed.warnings.length===2 && failed.get('shareAmount').textContent==='$48.50');
+    check('Constructor fallido informa solo el último intento sin bloquear', !failed.get('soundNotice').hidden && failed.warnings.length===1 && failed.get('shareAmount').textContent==='$48.50');
     check('Silenciado no genera aviso de audio fallido', muted.get('soundNotice').hidden && muted.warnings.length===0);
+    check('Mute invalida avisos pendientes y llama detener',pendingMuted.soundLog.stops===1 && pendingMuted.get('soundNotice').hidden && pendingMuted.warnings.length===0);
+    check('Inválido invalida avisos pendientes y llama detener',pendingInvalid.soundLog.stops===1 && pendingInvalid.get('soundNotice').hidden && pendingInvalid.warnings.length===0 && pendingInvalid.get('resultado').hidden);
+    check('Repetición descarta fallo anterior y conserva último resultado',JSON.stringify(pendingLatest.soundLog.types)===JSON.stringify(['triste','fanfarria']) && pendingLatest.get('soundNotice').hidden && pendingLatest.warnings.length===0 && pendingLatest.get('shareAmount').textContent===core.formatearMoneda(core.calcularImporte(100000.01).porSocio));
+    check('Fallo asíncrono activo avisa sin quitar resultado ni confeti',!pendingFailure.get('soundNotice').hidden && pendingFailure.warnings.length===1 && !pendingFailure.get('resultado').hidden && pendingFailure.particles()===32);
     var failedChecks = checks.filter(function(c){return !c.pasa;});
     var result={tipo:'app.js real con DOM, media y audio simulados; no es verificación visual ni iPhone',total:checks.length,aprobadas:checks.length-failedChecks.length,fallidas:failedChecks.length,pruebas:checks};
     var output=JSON.stringify(result,null,2);
