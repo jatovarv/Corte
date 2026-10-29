@@ -1,5 +1,7 @@
 /* Ejecutar: osascript -l JavaScript pruebas/interfaz.js .
    Ejecuta app.js real con DOM, matchMedia y AudioContext simulados.
+   El contrato de rechazo durante descarga/decode se ejerce con promesas;
+   fetch/decode/BufferSource reales del motor se verifican en audio.js.
    No modifica la app ni preferencias del sistema. No sustituye pruebas visuales. */
 ObjC.import('Foundation');
 
@@ -133,7 +135,7 @@ function run(argv) {
 
   var pendingMuted=soundFixture(true);
   pendingMuted.submit('59999.99');
-  check('Resume asíncrono no bloquea resultado ni confeti',!pendingMuted.get('resultado').hidden && pendingMuted.particles()===32 && pendingMuted.soundLog.pending.length===1);
+  check('Carga o resume asíncronos no bloquean resultado ni confeti',!pendingMuted.get('resultado').hidden && pendingMuted.particles()===32 && pendingMuted.soundLog.pending.length===1);
   pendingMuted.toggleSound();
   pendingMuted.soundLog.pending[0].reject(new Error('Rechazo después de silenciar'));
   var pendingInvalid=soundFixture(true);
@@ -148,6 +150,14 @@ function run(argv) {
   var pendingFailure=soundFixture(true);
   pendingFailure.submit('60000');
   pendingFailure.soundLog.pending[0].reject(new Error('Resume activo rechazado'));
+  var recordingFailures=[];
+  [{deposito:59999.99,motivo:'Descarga HTTP fallida'},{deposito:100000.01,motivo:'Decodificación fallida'}].forEach(function(item){
+    var ui=soundFixture(true);
+    ui.submit(String(item.deposito));
+    check(item.motivo+': cálculo y confeti aparecen antes de terminar audio',!ui.get('resultado').hidden && ui.get('shareAmount').textContent===core.formatearMoneda(core.calcularImporte(item.deposito).porSocio) && ui.particles()===32);
+    ui.soundLog.pending[0].reject(new Error(item.motivo));
+    recordingFailures.push({ui:ui,motivo:item.motivo});
+  });
 
   Promise.resolve().then(function(){}).then(function(){}).then(function(){
     check('API de audio ausente informa sin bloquear', !reduced.get('soundNotice').hidden && reduced.get('soundNotice').textContent.indexOf('seguir calculando')>=0 && reduced.warnings.length===1);
@@ -157,6 +167,7 @@ function run(argv) {
     check('Inválido invalida avisos pendientes y llama detener',pendingInvalid.soundLog.stops===1 && pendingInvalid.get('soundNotice').hidden && pendingInvalid.warnings.length===0 && pendingInvalid.get('resultado').hidden);
     check('Repetición descarta fallo anterior y conserva último resultado',JSON.stringify(pendingLatest.soundLog.types)===JSON.stringify(['triste','fanfarria']) && pendingLatest.get('soundNotice').hidden && pendingLatest.warnings.length===0 && pendingLatest.get('shareAmount').textContent===core.formatearMoneda(core.calcularImporte(100000.01).porSocio));
     check('Fallo asíncrono activo avisa sin quitar resultado ni confeti',!pendingFailure.get('soundNotice').hidden && pendingFailure.warnings.length===1 && !pendingFailure.get('resultado').hidden && pendingFailure.particles()===32);
+    recordingFailures.forEach(function(item){check(item.motivo+': aviso recuperable conserva resultado y confeti',!item.ui.get('soundNotice').hidden && item.ui.warnings.length===1 && !item.ui.get('resultado').hidden && item.ui.particles()===32);});
     var failedChecks = checks.filter(function(c){return !c.pasa;});
     var result={tipo:'app.js real con DOM, media y audio simulados; no es verificación visual ni iPhone',total:checks.length,aprobadas:checks.length-failedChecks.length,fallidas:failedChecks.length,pruebas:checks};
     var output=JSON.stringify(result,null,2);

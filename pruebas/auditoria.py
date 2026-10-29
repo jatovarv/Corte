@@ -60,7 +60,8 @@ for ref in re.findall(r"url\(\s*['\"]?([^)'\"]+)", css):
     if not ref.startswith("data:"):
         refs.add(ref)
 app = (ROOT / "app.js").read_text()
-for ref in re.findall(r"['\"]([^'\"]*assets/[^'\"]+\.(?:jpg|jpeg|png|svg|webp|mp3|wav|ogg))['\"]", app):
+effects = (ROOT / "efectos.js").read_text()
+for ref in re.findall(r"['\"]([^'\"]*assets/[^'\"]+\.(?:jpg|jpeg|png|svg|webp|mp3|wav|ogg))['\"]", app + effects):
     refs.add(ref)
 manifest = json.loads((ROOT / "manifest.webmanifest").read_text())
 for icon in manifest.get("icons", []):
@@ -78,6 +79,7 @@ for ref in sorted(refs):
     if safe:
         required.add(path.relative_to(ROOT).as_posix())
 check("Sin dependencias de red en app.js", re.search(r"['\"]https?://[^'\"]+['\"]", app) is None)
+check("Sin dependencias externas en efectos.js", re.search(r"['\"]https?://[^'\"]+['\"]", effects) is None)
 
 sw = (ROOT / "sw.js").read_text()
 cache_items = set()
@@ -100,6 +102,12 @@ check("Service worker declara install, activate y fetch", all(re.search(r"addEve
 check("Reducción de movimiento declarada en CSS y JS", "prefers-reduced-motion" in css and "prefers-reduced-motion" in app)
 check("Modelo de caja border-box", "box-sizing" in css and "border-box" in css)
 check("Cinco fotos locales", len(list((ROOT / "assets").glob("foto*.jpg"))) == 5)
+for name, expected in {
+    "fanfarria-joepayne-413201.mp3": "2dd2a48d189bb3057ab859461574dcbd73dab1445b5da7b934174f440083192b",
+    "triste-kirbydx-175409.mp3": "de4a029a0537dbecaf49b4936b0969919f5b7b54083d3859d584b5c4cc7dee3d",
+}.items():
+    path = ROOT / "assets" / name
+    check("Grabación elegida intacta: " + name, path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == expected)
 
 reference = ROOT / "pruebas/referencia-original.html"
 check("Referencia original intacta", hashlib.sha256(reference.read_bytes()).hexdigest() == "4c4aef070ec78f8a3913a6e206cb652f0d21420113c0cec5ab29d5503e4b27ad")
